@@ -1,5 +1,5 @@
 from page.app import App
-
+from utils.utils import *
 
 class TestDemo:
 
@@ -11,5 +11,3 @@ class TestDemo:
 
     def test_demo(self):
         self.main.search()
-
-
