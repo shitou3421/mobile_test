@@ -1,4 +1,7 @@
 import os
+import signal
+import subprocess
+from time import sleep
 
 import allure
 import pymysql
@@ -27,19 +30,32 @@ def cookies():
     pass
 
 
-class AttachVideo():
+def recordvideo(func):
     '''
     实现运行录屏的方法
     '''
+    project_root = os.path.abspath(os.path.dirname(__file__))
+    video_path = os.path.join(project_root, "video")
 
-    def __init__(self, driver: WebDriver):
-        self._driver = driver
+    start_cmd = "adb shell screenrecord --bugreport /data/local/tmp/{name}.mp4".format(name=func.__name__)
+    # pull_cmd = "adb pull /data/local/tmp/{name}.mp4 {video_path}".format(name=func.__name__,video_path=video_path)
+    pull_cmd = "adb pull /data/local/tmp/{name}.mp4 ./".format(name=func.__name__)
+    clear_cmd = "adb shell rm /data/local/tmp/{name}.mp4".format(name=func.__name__)
 
-    def __enter__(self):
-        self._driver.start_recording_screen(remotePath=r"E:\录屏\test.avi")
+    def record(*args, **kwargs):
+        # 启动录屏 adb shell screenrecord --bugreport --time-limit 20 /data/local/tmp/用例名.mp4
+        # os.system("adb shell screenrecord --bugreport /data/local/tmp/{name}.mp4".format(name=repr(func)))
+        P = subprocess.Popen(start_cmd, shell=True)
+        # 运行用例
+        func(*args, **kwargs)
+        # 停止录制
+        os.kill(P.pid, signal.CTRL_C_EVENT)
+        # 拉取视频 adb pull /data/local/tmp/用例名.mp4  ./
+        P = subprocess.Popen(pull_cmd, shell=True, encoding="utf-8")
+        # print("清理录制")
+        # P = subprocess.Popen(clear_cmd, shell=True)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self._driver.stop_recording_screen()
+    return record
 
 
 class Mysql():

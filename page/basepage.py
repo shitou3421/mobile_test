@@ -1,7 +1,9 @@
 # 通用方法的封装
 import logging
 
+from appium.webdriver import WebElement
 from appium.webdriver.common.mobileby import MobileBy
+from appium.webdriver.common.touch_action import TouchAction
 from appium.webdriver.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions
 from selenium.webdriver.support.wait import WebDriverWait
@@ -77,14 +79,60 @@ class BasePage():
         '''
         pass
 
+    def long_press(self, ele: WebElement, time):
+        '''
+        长按
+        :return:
+        '''
+        TouchAction(self._driver).long_press(el=ele, duration=time).perform()
+
+    def _scroll_down_to_up(self, x, y):
+        '''
+        从下往上滑动
+        :return:
+        '''
+        TouchAction(self._driver).long_press(x=x*0.5, y=y*0.8).move_to(x=x*0.8, y=y*0.2).release().perform()
+
+    def _scroll_up_to_down(self, x, y):
+        '''
+        从上往下滑动
+        :return:
+        '''
+        TouchAction(self._driver).long_press(x=x*0.5, y=y*0.8).move_to(x=x*0.8, y=y*0.2).release().perform()
 
 
+    def _scroll_right_to_left(self, x, y):
+        '''
+        从右往左滑动
+        :return:
+        '''
+        TouchAction(self._driver).long_press(x=x*0.2, y=y*0.5).move_to(x=x*0.8, y=y*0.5).release().perform()
 
+    def _scroll_left_to_right(self, x, y):
+        '''
+        从左往右滑动
+        :return:
+        '''
+        TouchAction(self._driver).long_press(x=x*0.8, y=y*0.5).move_to(x=x*0.2, y=y*0.5).release().perform()
 
-
-
-
-
-
-
+    def scroll(self, postion:str):
+        '''
+        滑动方法
+        :param postion:
+        :return:
+        '''
+        size = self._driver.get_window_size()
+        x = size.get("width")
+        y = size.get("height")
+        postion = postion.lower()
+        if postion == "up":
+            self._scroll_down_to_up(x, y)
+        elif postion == "down":
+            self._scroll_up_to_down(x, y)
+        elif postion == "left":
+            self._scroll_right_to_left(x, y)
+        elif postion == "right":
+            self._scroll_left_to_right(x, y)
+        else:
+            raise Exception("不支持的滚动类型")
 
